@@ -1,14 +1,17 @@
-import org.apache.spark
+package yelp
+
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.SQLImplicits
 
 object Task4 {
         
-    def setup () = {
-        val graph_file = sc.textFile("../Data/yelp_top_users_friendship_graph.csv")
+    def setup (spark : SparkSession) = {
+        val graph_file = spark.sparkContext.textFile("../Data/yelp_top_users_friendship_graph.csv")
         graph_file.map(_.split(","))
     }
 
-    def a () {
-        val graph = setup()
+    def a (spark : SparkSession) {
+        val graph = setup(spark)
         val nodes_by_edges = graph.map (edge => {
             val element_1 = if (edge(0)(0).toString == """"""") edge(0).slice(1, edge(0).length - 1) else edge(0)
             val element_2 = if (edge(1)(0).toString == """"""") edge(1).slice(1, edge(1).length - 1) else edge(1)
@@ -24,9 +27,9 @@ object Task4 {
         nodes_by_edges.sortBy(_._2, ascending=false).take(10).foreach(println)
     }
 
-    def b () {
-        val graph = setup()
-        
+    def b (spark : SparkSession) {
+        val graph = setup(spark)
+
         val nodes_with_out_edges = graph.map (edge => {
             val element_1 = if (edge(0)(0).toString == """"""") edge(0).slice(1, edge(0).length - 1) else edge(0)
             val element_2 = if (edge(1)(0).toString == """"""") edge(1).slice(1, edge(1).length - 1) else edge(1)
@@ -67,4 +70,19 @@ object Task4 {
         println("Median out-edges: " + out_index_key.lookup(midpoint_out)(0)._2.toList.length)
         println("Median in-edges: " + in_index_key.lookup(midpoint_in)(0)._2.toList.length)
     }
+
+    def main(args: Array[String]) {
+        val spark = SparkSession.builder
+                        .master("local")
+                        .appName("Task 4")
+                        .getOrCreate()
+
+        import spark.implicits._
+
+        a(spark)
+        b(spark)
+
+        spark.stop()
+    }
+
 }
