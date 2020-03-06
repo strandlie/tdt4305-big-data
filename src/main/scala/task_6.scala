@@ -37,7 +37,19 @@ object Task6 {
     }
 
     def c(spark: SparkSession) {
+        println
+        println("Task 6c:")
+        val tup = Task5.a(spark)
 
+        val reviewTableDf = tup._2
+        reviewTableDf.createOrReplaceTempView("reviews")
+
+        spark.sql("SELECT user_id, COUNT(review_id) AS review_count " + 
+                  "FROM reviews " + 
+                  "GROUP BY user_id " + 
+                  "ORDER BY review_count DESC " +
+                  "LIMIT 20").show
+        
     }
 
     def main(args: Array[String]) {
@@ -47,7 +59,9 @@ object Task6 {
                         .getOrCreate()
 
 
+        // a() is called in b, so no need to call it explicitly here
         b(spark)
+        c(spark)
         spark.stop()
     }
 }
