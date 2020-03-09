@@ -16,8 +16,7 @@ object Task6 {
         businessTableDf.createOrReplaceTempView("businesses")
         reviewTableDf.createOrReplaceTempView("reviews")
 
-        spark.sql("SELECT * FROM businesses LIMIT 5").createOrReplaceTempView("5_businesses")
-        val join_result = spark.sql("SELECT * FROM businesses, reviews WHERE businesses.business_id = reviews.business_id LIMIT 50")
+        val join_result = spark.sql("SELECT * FROM businesses, reviews WHERE businesses.business_id = reviews.business_id")
 
         println("Result of join: ")
         join_result.show

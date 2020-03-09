@@ -2,19 +2,14 @@ package yelp
 
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.SQLImplicits
+import org.apache.spark.rdd.RDD
 
 
 object Task2 {
 
-    def setup (spark : SparkSession) = {
-        val reviews_file = spark.sparkContext.textFile("../Data/yelp_top_reviewers_with_reviews.csv").cache()
-        reviews_file.map(line => line.split("\t"))
-    }
-
-    def a (spark : SparkSession) {
+    def a (spark : SparkSession, reviews: RDD[Array[String]]) {
         println
         println("Task 2a:")
-        val reviews = setup(spark)
         val ids = reviews.map (review => review(1))
             .filter(id => id != """"user_id"""")
             .map (id => if (id(0).toString == """"""") id.slice(1, id.length - 1) else id)
@@ -22,10 +17,9 @@ object Task2 {
         println("Number of distinct users: " + num_distinct_users)
     }
 
-    def b (spark : SparkSession) {
+    def b (spark : SparkSession, reviews: RDD[Array[String]]) {
         println
         println("Task 2b:")
-        val reviews = setup(spark)
         val review_texts = reviews.map (review => review(3))
             .filter(text => { 
                 try {
@@ -40,16 +34,15 @@ object Task2 {
             .map(base64_text => { new String(java.util.Base64.getDecoder.decode(base64_text))})
         
         val character_counts = review_texts.map(text => text.length)
-        val sum = character_counts.reduce(_ + _)
-        val average = sum / character_counts.count
+        val sum = character_counts.sum
+        val average = sum / reviews.count
         println("Average number of characters in a user review: " + average)
 
     }
 
-    def c (spark : SparkSession) {
+    def c (spark : SparkSession, reviews: RDD[Array[String]]) {
         println
         println("Task 2c:")
-        val reviews = setup(spark)
         val business_ids = reviews.map (review => review(2))
             .filter(id => id != """"business_id"""")
             .map (id => if (id(0).toString == """"""") id.slice(1, id.length - 1) else id)
@@ -60,10 +53,9 @@ object Task2 {
         top_10_business_ids.foreach(tup => println(tup._1))
     }
 
-    def d (spark : SparkSession) {
+    def d (spark : SparkSession, reviews: RDD[Array[String]]) {
         println
         println("Task 2d:")
-        val reviews = setup(spark)
         val unix_dates = reviews.map (review => review(4))
             .filter(date => date != """"review_date"""")
             .map (date_string => if (date_string(0).toString == """"""") date_string.slice(1, date_string.length - 1) else date_string)
@@ -79,10 +71,9 @@ object Task2 {
 
     }
 
-    def e(spark : SparkSession) {
+    def e(spark : SparkSession, reviews: RDD[Array[String]]) {
         println
         println("Task 2e:")
-        val reviews = setup(spark)
         val unix_dates = reviews.map (review => review(4))
             .filter(date => date != """"review_date"""")
             .map (date_string => if (date_string(0).toString == """"""") date_string.slice(1, date_string.length - 1) else date_string)
@@ -95,10 +86,9 @@ object Task2 {
         println("Last review: " + df.format(max_date * 1000L))
     }
 
-    def f(spark : SparkSession) {
+    def f(spark : SparkSession, reviews: RDD[Array[String]]) {
         println
         println("Task 2f:")
-        val reviews = setup(spark)
         val user_ids_and_review_texts = reviews.map (review => (review(1), review(3)))
             .filter(tup => { 
                 try {
@@ -154,13 +144,15 @@ object Task2 {
                         .master("local")
                         .appName("Task 2")
                         .getOrCreate()
+
+        val reviews = Task1.a(spark)
        
-        a(spark)
-        b(spark)
-        c(spark)
-        d(spark)
-        e(spark)
-        f(spark)
+        a(spark, reviews)
+        b(spark, reviews)
+        c(spark, reviews)
+        d(spark, reviews)
+        e(spark, reviews)
+        f(spark, reviews)
 
         spark.stop()
     }
