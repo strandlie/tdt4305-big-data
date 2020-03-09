@@ -1,15 +1,21 @@
-import org.apache.spark
+import org.apache.spark.sql.SparkSession
 
 object Task3 {
 
-    def setup () = {
-        val rdd = sc.textFile("/Users/slmdl/stuff/tdt4305-big-data/yelp_businesses.csv").mapPartitionsWithIndex {(idx, iter) => if (idx == 0) iter.drop(1) else iter }.map(_.split("\t"))
+    def setup (spark : SparkSession) = {
+        val rdd = spark.sparkContext.textFile("/Users/slmdl/stuff/tdt4305-big-data/yelp_businesses.csv")
+                    .mapPartitionsWithIndex {(idx, iter) => if (idx == 0) iter.drop(1) else iter }
+                    .map(_.split("\t"))
+                    .cache()
+        rdd
     }
 
     // a) What is the average rating for businesses in each city?
-    def a () {
-        val businesses = setup() // ER EN 'Unit = ()'
-        val city_star = businesses.map(biz => (biz(3), biz(8).toInt))
+    def a (spark : SparkSession) {
+        println
+        println("Task 3a:")
+        val rdd = setup(spark)
+        val city_star = rdd.map(biz => (biz(3), biz(8).toInt))
         val city_count = city_star.countByKey
         val city_accScore = city_star.reduceByKey((a,b) => a+b)
         val city_avgStars = city_accScore.map{case (city, acc) => (city, acc.toDouble/city_count(city))}
@@ -17,9 +23,11 @@ object Task3 {
     }
 
     // b) What are the top 10 most frequent categories in the data?
-    def b () {
-        val businesses = setup()
-        val categories_flattened = businesses.flatMap( biz => biz(10).split(", ") )
+    def b (spark : SparkSession) {
+        println
+        println("Task 3b:")
+        val rdd = setup(spark)
+        val categories_flattened = rdd.flatMap( biz => biz(10).split(", ") )
         val categories_reduced_sorted = categories_flattened.map( word => (word, 1))
                                                             .reduceByKey(_+_)
                                                             .sortBy(_._2 * -1)
@@ -34,14 +42,30 @@ object Task3 {
     itself and calculated by the following formula:
     GCpostalcode=(meanpostalcode(latitude),meanpostalcode(longitude))
     */
-    def c () {
-        val businesses = setup()
-        val postcode_latlong = businesses.map( biz => (biz(5), (biz(6).toFloat, biz(7).toFloat)))
+    def c (spark : SparkSession) {
+        println
+        println("Task 3c:")
+        val rdd = setup(spark)
+        val postcode_latlong = rdd.map( biz => (biz(5), (biz(6).toFloat, biz(7).toFloat)))
         val postcode_count = postcode_latlong.countByKey
         val accumulated = postcode_latlong.reduceByKey( (x,y) => (x._1 + y._1, x._2 + y._2))
         val averaged = accumulated.map{ case (city,acc) => (city, (acc._1/postcode_count(city), acc._2/postcode_count(city)))}
         averaged.take(20).foreach(println)
-        // averaged.sortByKey().take(20).foreach(println)
-        // postcode_latlong.sortByKey().take(20).foreach(println)
+
+        // averaged.sortByKey().take(20).foreach(println) // USED TO CHECK VALUES
+        // postcode_latlong.sortByKey().take(20).foreach(println) // USED TO CHECK VALUES
+    }
+
+    def main(args: Array[String]) {
+        val spark = SparkSession.builder
+                        .master("local")
+                        .appName("Task 3")
+                        .getOrCreate()
+       
+        a(spark)
+        b(spark)
+        c(spark)
+
+        spark.stop()
     }
 }
