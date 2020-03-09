@@ -3,7 +3,7 @@ import org.apache.spark.sql.SparkSession
 object Task3 {
 
     def setup (spark : SparkSession) = {
-        val rdd = spark.sparkContext.textFile("/Users/slmdl/stuff/tdt4305-big-data/yelp_businesses.csv")
+        val rdd = spark.sparkContext.textFile("../../Data/yelp_businesses.csv")
                     .mapPartitionsWithIndex {(idx, iter) => if (idx == 0) iter.drop(1) else iter }
                     .map(_.split("\t"))
                     .cache()
@@ -19,7 +19,9 @@ object Task3 {
         val city_count = city_star.countByKey
         val city_accScore = city_star.reduceByKey((a,b) => a+b)
         val city_avgStars = city_accScore.map{case (city, acc) => (city, acc.toDouble/city_count(city))}
-        city_avgStars.take(20).foreach(println)
+        city_avgStars.take(10).foreach(println)
+        val res = city_avgStars.sortByKey(true, 1)
+        // res.repartition(1).saveAsTextFile("../../../target/3a-results")
     }
 
     // b) What are the top 10 most frequent categories in the data?
@@ -31,7 +33,7 @@ object Task3 {
         val categories_reduced_sorted = categories_flattened.map( word => (word, 1))
                                                             .reduceByKey(_+_)
                                                             .sortBy(_._2 * -1)
-        categories_reduced_sorted.take(10).foreach(println)
+        categories_reduced_sorted.take(10)foreach(println)
     }
  
     /* c)
@@ -50,8 +52,10 @@ object Task3 {
         val postcode_count = postcode_latlong.countByKey
         val accumulated = postcode_latlong.reduceByKey( (x,y) => (x._1 + y._1, x._2 + y._2))
         val averaged = accumulated.map{ case (city,acc) => (city, (acc._1/postcode_count(city), acc._2/postcode_count(city)))}
-        averaged.take(20).foreach(println)
-
+        averaged.take(10).foreach(println)
+        val res = averaged.sortByKey(true, 1)
+        
+        // res.repartition(1).saveAsTextFile("../../../target/3c-results")
         // averaged.sortByKey().take(20).foreach(println) // USED TO CHECK VALUES
         // postcode_latlong.sortByKey().take(20).foreach(println) // USED TO CHECK VALUES
     }
