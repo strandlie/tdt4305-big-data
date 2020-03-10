@@ -16,21 +16,21 @@ object Task5 {
                     .option("header", "true")
                     .option("delimiter", ",")
                     .schema(friendshipTableSchema)
-                    .load("../Data/yelp_top_users_friendship_graph.csv")
+                    .load("./assets/data/yelp_top_users_friendship_graph.csv")
 
         val reviewTableSchema = Encoders.product[ReviewTableSchema].schema
         val reviewTableDf = spark.read.format("csv")
                     .option("header", "true")
                     .option("delimiter", "\t")
                     .schema(reviewTableSchema)
-                    .load("../Data/yelp_top_reviewers_with_reviews.csv")
+                    .load("./assets/data/yelp_top_reviewers_with_reviews.csv")
 
         val businessTableSchema = Encoders.product[BusinessTableSchema].schema
         val businessTableDf = spark.read.format("csv")
                     .option("header", "true")
                     .option("delimiter", "\t")
                     .schema(businessTableSchema)
-                    .load("../Data/yelp_businesses.csv")
+                    .load("./assets/data/yelp_businesses.csv")
 
         (friendshipTableDf, reviewTableDf, businessTableDf)
     }
@@ -42,6 +42,9 @@ object Task5 {
                         .getOrCreate()
 
         a(spark)
+        println
+        println("Task 5a:")
+        println("Running this task by itself does not produce any output in console. Please run Task6 to use the results from this task. ")
         spark.stop()
 
 
