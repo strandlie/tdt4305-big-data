@@ -3,7 +3,7 @@ To run this project
 
 1. Clone the repository 
 2. Download the dataset
-3. Place the data-files in the `assets/data` directory
+3. Create a directory called `assets/data` on the same level as `src` and place the data files in the `data` directory
 4. Install sbt ( Scala Simple Build Tool ) by following this guide: https://www.scala-sbt.org/1.x/docs/Setup.html
 5. Install Spark from this page: https://spark.apache.org/downloads.html
 6. From the root of the repository run the commands 
