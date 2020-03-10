@@ -6,11 +6,13 @@ import org.apache.spark.sql.SQLImplicits
 object Task4 {
         
     def setup (spark : SparkSession) = {
-        val graph_file = spark.sparkContext.textFile("../Data/yelp_top_users_friendship_graph.csv")
+        val graph_file = spark.sparkContext.textFile("./assets/data/yelp_top_users_friendship_graph.csv")
         graph_file.map(_.split(","))
     }
 
     def a (spark : SparkSession) {
+        println
+        println("Task 4a:")
         val graph = setup(spark)
         val nodes_by_edges = graph.map (edge => {
             val element_1 = if (edge(0)(0).toString == """"""") edge(0).slice(1, edge(0).length - 1) else edge(0)
@@ -28,6 +30,8 @@ object Task4 {
     }
 
     def b (spark : SparkSession) {
+        println
+        println("Task 4b:")
         val graph = setup(spark)
 
         val nodes_with_out_edges = graph.map (edge => {

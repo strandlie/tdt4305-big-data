@@ -5,7 +5,7 @@ import org.apache.spark.sql.SparkSession
 object Task3 {
 
     def setup (spark : SparkSession) = {
-        val rdd = spark.sparkContext.textFile("../../Data/yelp_businesses.csv")
+        val rdd = spark.sparkContext.textFile("./assets/data/yelp_businesses.csv")
                     .mapPartitionsWithIndex {(idx, iter) => if (idx == 0) iter.drop(1) else iter }
                     .map(_.split("\t"))
                     .cache()
