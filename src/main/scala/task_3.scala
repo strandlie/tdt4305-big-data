@@ -1,3 +1,5 @@
+package yelp
+
 import org.apache.spark.sql.SparkSession
 
 object Task3 {
