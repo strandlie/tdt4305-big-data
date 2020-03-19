@@ -13,11 +13,12 @@ object Task {
         val lexicon_source = scala.io.Source.fromFile("./assets/resources/valence.txt")
         val stopwords_source = scala.io.Source.fromFile("./assets/resources/stopwords.txt")
 
-        //val lexicon = try lexicon_source.mkString finally lexicon_source.close()
+        lexicon_source.getLines.foreach(println)
+
+        //val valences = try lexicon_source.mkString finally lexicon_source.close()
         val stopwords = try stopwords_source.mkString finally stopwords_source.close()
 
-
-        println("Stopwords contains 'in': " + stopwords.contains("in"))
+        //println("Valence: " + valences)
 
         val reviews = reviews_file.map(line => line.split("\t"))
 
@@ -37,18 +38,26 @@ object Task {
             .groupByKey
 
         val business_ids_and_tokenized_review_texts = business_ids_and_review_texts.map(id_and_reviews => {
-            id_and_reviews._2.map (review_text => {
-                review_text.split(" ")
-            })
+            (id_and_reviews._1, id_and_reviews._2.map(review_text => {
+                val tokenized = review_text.replaceAll("[^a-zA-Z]","")
+                val splitText = review_text.split(" ")
+                splitText.map(word => {
+                    val stripped = word.replaceAll("[^a-zA-Z]","")
+                    stripped.toLowerCase
+                })
+                .filter(word => { word.length > 0 })
+            }))
         })
 
-        /*
-        val without_stopwords = business_ids_and_tokenized_review_texts.map (id_and_reviews => {
-            id_and_reviews._2.map (review => {
-                review.filter(word => )
-            })
-        })*/
+        val business_ids_and_flatmapped_reviews = business_ids_and_tokenized_review_texts.map(id_and_reviews => {
+            (id_and_reviews._1, id_and_reviews._2.flatMap(reviews => reviews))
+        })
 
+        val without_stopwords = business_ids_and_flatmapped_reviews.map (id_and_words => {
+            (id_and_words._1, id_and_words._2.filter (word => { !stopwords.contains(word) }))
+        })
+
+        //without_stopwords.take(10).foreach(println)
 
 
 
