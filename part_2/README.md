@@ -1,5 +1,3 @@
-# THIS HAS NOT BEEN CHANGED FROM PART_1 YET
-
 # Installation
 To run this project
 
