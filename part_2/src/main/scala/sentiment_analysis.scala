@@ -1,4 +1,4 @@
-package yelp
+package yelp.part2
 
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.SQLImplicits
@@ -10,7 +10,7 @@ object SentimentAnalysis {
                         .appName("Sentiment Analysis")
                         .getOrCreate()
 
-        
+        Task.perform(spark)
         spark.stop()
     }
 }

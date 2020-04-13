@@ -1,4 +1,4 @@
-package yelp
+package yelp.part2
 
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.SQLImplicits
@@ -6,19 +6,16 @@ import org.apache.spark.sql.SQLImplicits
 
 object Task {
     def perform(spark : SparkSession) = {
+
         val reviews_file = spark.sparkContext.textFile("./assets/data/yelp_top_reviewers_with_reviews.csv")
         val lexicon_file = spark.sparkContext.textFile("./assets/resources/valence.txt")
         val stopwords_file = spark.sparkContext.textFile("./assets/resources/stopwords.txt")
 
-        val lexicon_source = scala.io.Source.fromFile("./assets/resources/valence.txt")
-        val stopwords_source = scala.io.Source.fromFile("./assets/resources/stopwords.txt")
-
-        lexicon_source.getLines.foreach(println)
-
-        //val valences = try lexicon_source.mkString finally lexicon_source.close()
-        val stopwords = try stopwords_source.mkString finally stopwords_source.close()
-
-        //println("Valence: " + valences)
+        val stopwords = stopwords_file.collect.toList
+        val lexicon = lexicon_file.map(line => line.split("\t"))
+            .map(line => (line(0), line(1)))
+            .collect
+            .toMap
 
         val reviews = reviews_file.map(line => line.split("\t"))
 
@@ -45,7 +42,7 @@ object Task {
                     val stripped = word.replaceAll("[^a-zA-Z]","")
                     stripped.toLowerCase
                 })
-                .filter(word => { word.length > 0 })
+                .filter(word => { word.length > 1 })
             }))
         })
 
@@ -57,12 +54,25 @@ object Task {
             (id_and_words._1, id_and_words._2.filter (word => { !stopwords.contains(word) }))
         })
 
-        //without_stopwords.take(10).foreach(println)
+        val business_ids_and_polarities = without_stopwords.map(id_and_words => {
+            val business_id = id_and_words._1
+            val words = id_and_words._2
 
+            val total_polarity = words.map (word => {
+                try {
+                    lexicon(word).toInt
+                }
+                catch {
+                    case e: NoSuchElementException => {
+                        0
+                    }
+                }
+            }).fold(0)(_ + _)
+            
+            (business_id, total_polarity)
+        })
 
-
-
-
+        business_ids_and_polarities.sortBy(_._2, ascending=false).take(10).foreach(println)
     }
 
     def main(args: Array[String]) {
