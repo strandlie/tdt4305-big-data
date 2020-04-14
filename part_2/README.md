@@ -8,7 +8,7 @@ To run this project
 5. Install Spark from this page: https://spark.apache.org/downloads.html
 6. From the `part_2` directory (containing the build.sbt) run the commands 
     * `sbt package`
-    * `spark-submit --class yelp.part2.SentimentAnalysis --master local[4] target/scala-2.11/project-1_2.11-1.0.jar `
+    * `spark-submit --class yelp.part2.SentimentAnalysis --master local[4] target/scala-2.11/project-1-part-2_2.11-1.0.jar `
 
 where `spark-submit` is in the `bin`-directory of your spark installation.
 
